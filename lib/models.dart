@@ -1,6 +1,15 @@
+enum MessageType {
+  Unknown,
+  EndToEndClientMessage,
+  EndToEndServerReply,
+  BroadcastMessageType,
+  BroadcastTypingMessage,
+  BroadcastStopTypingMessage,
+}
+
 class Message {
   bool amITheOwner;
-  int type;
+  MessageType type;
   String message;
   String from;
   String username;
@@ -16,7 +25,7 @@ class Message {
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
       amITheOwner: false,
-      type: int.parse("${json['type']}"),
+      type: MessageType.values[(int.parse("${json['type']}")) - 1],
       message: json["message"],
       from: json['from'],
       username: json["username"],
@@ -32,3 +41,6 @@ class Message {
     };
   }
 }
+
+
+// class Message

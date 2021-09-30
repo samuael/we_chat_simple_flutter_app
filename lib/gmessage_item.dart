@@ -2,9 +2,9 @@ import 'package:ws_chat/models.dart';
 
 import 'libs.dart';
 
-class MessageItem extends StatelessWidget {
+class GroupMessageItem extends StatelessWidget {
   final Message message;
-  MessageItem(this.message);
+  GroupMessageItem(this.message);
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +51,6 @@ class MessageItem extends StatelessWidget {
               message.username,
               style: TextStyle(
                 fontStyle: FontStyle.italic,
-              ),
-            ),
-            Text(
-              message.from,
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-                color: Colors.grey,
               ),
             ),
             Text(

@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:ws_chat/message_item.dart';
 
 import 'libs.dart';
 
 class EchoScreen extends StatefulWidget {
-  EchoScreen({Key? key}) : super(key: key);
+  final Stream<dynamic> stream;
+  EchoScreen(this.stream, {Key? key}) : super(key: key);
 
   @override
   State<EchoScreen> createState() {
@@ -43,23 +46,35 @@ class EchoScreenState extends State<EchoScreen> {
                     stream: channel!.stream,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        // print(snapshot.data.toString());
-                        if (snapshot.data.toString().startsWith("ey:") ||
-                            snapshot.data.toString().startsWith("ee:")) {
-                          final mlist = snapshot.data.toString().split(":");
-                          final mess = Message(
-                            amITheOwner:
-                                snapshot.data.toString().startsWith("ey:"),
-                            from: snapshot.data.toString().startsWith("ey:")
-                                ? "( You )"
-                                : " Server ",
-                            message: mlist[1],
-                            type: 0,
-                            username: snapshot.data.toString().startsWith("ey:")
-                                ? "( You )"
-                                : "** Server **",
-                          );
-                          this.messages.add(mess);
+                        print(snapshot.data.toString());
+                        try {
+                          if (MessageType.values[int.parse(
+                                  "${jsonDecode(snapshot.data.toString())['type']}")] ==
+                              MessageType.EndToEndClientMessage) {
+                            final mess = Message(
+                              amITheOwner: true,
+                              from: " You ",
+                              message:
+                                  ("${(jsonDecode(snapshot.data.toString())['body'] as Map<String, dynamic>)["msg"] as String}"),
+                              type: MessageType.EndToEndClientMessage,
+                              username: "you",
+                            );
+                            this.messages.add(mess);
+                          } else if (MessageType.values[int.parse(
+                                  "${jsonDecode(snapshot.data.toString())['type']}")] ==
+                              MessageType.EndToEndServerReply) {
+                            final mess = Message(
+                              amITheOwner: false,
+                              from: " Server ",
+                              message:
+                                  "${(jsonDecode(snapshot.data.toString())['body'] as Map<String, dynamic>)["msg"] as String}",
+                              type: MessageType.EndToEndServerReply,
+                              username: "** Server **",
+                            );
+                            this.messages.add(mess);
+                          }
+                        } catch (e, a) {
+                          // -- DO Nothing
                         }
                       }
                       return SingleChildScrollView(
@@ -125,7 +140,16 @@ class EchoScreenState extends State<EchoScreen> {
                     color: Theme.of(context).primaryColor,
                     onPressed: () {
                       if (textInputController.text != "") {
-                        channel!.sink.add("e:" + textInputController.text);
+                        channel!.sink.add(
+                          jsonEncode(
+                            {
+                              "type": MessageType.EndToEndClientMessage.index,
+                              "body": {
+                                "msg": textInputController.text,
+                              },
+                            },
+                          ),
+                        );
                       }
                       textInputController.text = "";
                     },
